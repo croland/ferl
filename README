@@ -4,6 +4,8 @@ You spot a pack of ferl ferrets roaming the woods.
 
 ferl is the embryo of an automated trading system written in Erlang. No world domination, no fame, no glory, just code. The project will be a continuous evolution, one commit at a time.  
 
+This content is released under the MIT License. So, have at it.
+
 The name is pronounced fe*ral [feer-uhl, fer-] as in feral.  Why? because this will be wild (* growl *).
 
 The plan right now is to use: 
