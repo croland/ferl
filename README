@@ -6,7 +6,13 @@ ferl is the embryo of an automated trading system written in Erlang. No world do
 
 The name is pronounced fe*ral [feer-uhl, fer-] as in feral.  Why? because this will be wild (* growl *).
 
-The plan right now is to use Erlang, CouchDB and maybe some RabbitMQ, which is subject to change at anytime.
+The plan right now is to use: 
+* List is subject to change at anytime
+
+- Erlang
+- CouchDB 
+- Maybe some RabbitMQ
+
 
 The features I'll be focusing on first are something like:
 - Simple indicators
