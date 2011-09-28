@@ -9,11 +9,10 @@ This content is released under the MIT License. So, have at it.
 The name is pronounced fe*ral [feer-uhl, fer-] as in feral.  Why? because this will be wild (* growl *).
 
 The plan right now is to use: 
-* List is subject to change at anytime
-
 - Erlang
 - CouchDB 
 - Maybe some RabbitMQ
+* List is subject to change at anytime
 
 
 The features I'll be focusing on first are something like:
