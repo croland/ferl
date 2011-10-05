@@ -1,5 +1,5 @@
 -module(timevalue).
--export([run/2]).
+-export([run/3]).
 
-run(InterestRate, Investment) ->
-	(InterestRate * Investment) + Investment.	
+run(IR, Inv, Periods) ->
+	Inv * math:pow(IR + 1, Periods). 
