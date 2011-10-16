@@ -8,4 +8,4 @@ run() ->
 	application:start(couchbeam),
 	Connection = couchbeam:server_connection(),
 	Options = [],
-	Db = couchbeam:create_db(Connection, "test2", Options).
+	Db = couchbeam:open_db(Connection, "test2", Options).
