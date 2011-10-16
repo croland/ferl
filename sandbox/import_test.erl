@@ -33,8 +33,13 @@ import_line(Line) ->
 handle_call({import_line, Line}, _From, Db) ->
 	[Date, Open, High, Low, Close, Volume, AdjClose] = re:split(Line, "[,]", [{return, list}]),
 	Doc = {[
-		{<<"Date">>, Date}, 
-		{<<"Open">>, Open}
+		{<<"Date">>, iolist_to_binary(Date)}, 
+		{<<"Open">>, list_to_float(Open)},
+		{<<"High">>, list_to_float(High)},
+		{<<"Low">>, list_to_float(Low)},
+		{<<"Close">>, list_to_float(Close)},
+		{<<"Volume">>, list_to_integer(Volume)},
+		{<<"AdjClose">>, list_to_float(AdjClose)}
 	]},
 	{ok, DocResult} = couchbeam:save_doc(Db, Doc),
 	{reply, Line, Db}.
