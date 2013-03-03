@@ -8,18 +8,19 @@
 -module(import_test).
 -behaviour(gen_server).
 -export([import_line/1]).
--export([init/1, run/0, start_link/0, handle_call/3, terminate/2]).
+-export([init/0, run/0, start_link/0, handle_call/3, terminate/2]).
 
-init([]) -> application:start(sasl),
+init() -> 
+	application:start(sasl),
 	application:start(ibrowse),
-	couchbeam:start(),
-	Connection = couchbeam:server_connection(),
+	application:start(couchbeam),
+	Connection = couchbeam:server_connection("localhost", 5984, "", []),
 	{ok, Db} = couchbeam:open_or_create_db(Connection, "test2", []),
 	{ok, Db}.
 
 start_link() -> gen_server:start_link({local, import_test}, import_test, [], []).	
 
-run() -> {ok, Binary} = file:read_file("msft.csv"),
+run() -> {ok, Binary} = file:read_file("../data/msft.csv"),
 	Lines = string:tokens(erlang:binary_to_list(Binary), "\n"),
 	lists:map(fun(L) -> import_line(L) end, Lines).
 

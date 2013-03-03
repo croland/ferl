@@ -3,9 +3,9 @@
 -export([run/0]).
 
 run() ->
-	do_stuff("msft_sp500.csv").
+	process_file("msft_sp500.csv").
 
-do_stuff(File) ->
+process_file(File) ->
 	{ok, Binary} = file:read_file(File),
 	Lines = string:tokens(erlang:binary_to_list(Binary), "\n"),
 	Reversed = lists:reverse(Lines),
