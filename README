@@ -8,7 +8,7 @@ The name is pronounced fe*ral [feer-uhl, fer-] as in feral.
 
 Dependencies:
 - Erlang
-- Riak 
+- CouchDB
 
 0.1 Features:
 - Back testing
