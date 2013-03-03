@@ -1,0 +1,12 @@
+{application, ferl,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { ferl_app, []}},
+  {env, []}
+ ]}.
