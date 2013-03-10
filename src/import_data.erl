@@ -8,15 +8,40 @@
 -module(import_data).
 -behaviour(gen_server).
 -export([import_line/1]).
--export([init/1, run/0, start_link/0, handle_call/3, terminate/2]).
+-export([init/1, install/0, create_table/0, run/0, getall/0, getfromdate/1, start_link/0, handle_call/3, terminate/2]).
 
+-record(tick, {tick_date, tick_open, tick_high, tick_low, tick_close, tick_vol, tick_adjclose}).
+
+install() ->
+	ok = mnesia:create_schema([node()]),
+	{ok, []}.
+
+create_table() ->
+	mnesia:create_table(tick, 
+		[{attributes, record_info(fields, tick)}]),
+	{ok, []}.
+
+getall() ->
+	F = fun() -> qlc:e(qlc:q([X || X <- mnesia:table(tick)])) end,
+	Result = mnesia:transaction(F),
+	Result.
+
+getfromdate(Date) ->
+	F = fun() -> qlc:e(qlc:q([X || X <- mnesia:table(tick), X#tick.tick_date >= Date])) end,
+	Result = mnesia:transaction(F),
+	Result.
+
+calc30dayMA() ->
+	ok.
+	
 init([]) -> 
+	mnesia:start(),
 	{ok, []}.
 
 start_link() -> gen_server:start_link({local, import_data}, import_data, [], []).	
 
 run() -> {ok, Binary} = file:read_file("../data/msft.csv"),
-	Lines = string:tokens(erlang:binary_to_list(Binary), "\n"),
+	Lines = string:tokens(erlang:binary_to_list(Binary), "\r\n"),
 	lists:map(fun(L) -> import_line(L) end, Lines).
 
 import_line(Line) -> gen_server:call(import_data, {import_line, Line}).	
@@ -30,9 +55,12 @@ handle_call({import_line, Line}, _From, Db) ->
 		{<<"Low">>, list_to_float(Low)},
 		{<<"Close">>, list_to_float(Close)},
 		{<<"Volume">>, list_to_integer(Volume)},
-		{<<"AdjClose">>, list_to_float(re:replace(AdjClose, "\n", ""))}
+		{<<"AdjClose">>, list_to_float(AdjClose)}
 	]},
-	%% {ok, DocResult} = couchbeam:save_doc(Db, Doc),
+	Tick = #tick{tick_date=Date, tick_open=Open, tick_high=High, tick_low=Low, tick_close=Close, tick_vol=Volume, tick_adjclose=AdjClose},
+	F = fun() -> mnesia:write(Tick) end,
+	mnesia:transaction(F),
 	{reply, Line, Db}.
 
-terminate(_Reason, State) -> {ok, State}.
+terminate(_Reason, State) -> 
+	{ok, State}.
