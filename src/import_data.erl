@@ -7,8 +7,9 @@
 
 -module(import_data).
 -behaviour(gen_server).
+-include("c:/Program\ Files\ (x86)/erl5.10/lib/stdlib-1.19/include/qlc.hrl").
 -export([import_line/1]).
--export([init/1, install/0, create_table/0, run/0, getall/0, getfromdate/1, start_link/0, handle_call/3, terminate/2]).
+-export([init/1, install/0, create_table/0, run/0, getall/0, start_link/0, handle_call/3, terminate/2]).
 
 -record(tick, {tick_date, tick_open, tick_high, tick_low, tick_close, tick_vol, tick_adjclose}).
 
@@ -22,18 +23,10 @@ create_table() ->
 	{ok, []}.
 
 getall() ->
-	F = fun() -> qlc:e(qlc:q([X || X <- mnesia:table(tick)])) end,
-	Result = mnesia:transaction(F),
-	Result.
+	Fun = fun() -> qlc:e(qlc:q([ X || X <- mnesia:table(tick), list_to_float(X#tick.tick_open) > 90 ])) end,
+	{atomic, Results} = mnesia:transaction(Fun),
+	Results.
 
-getfromdate(Date) ->
-	F = fun() -> qlc:e(qlc:q([X || X <- mnesia:table(tick), X#tick.tick_date >= Date])) end,
-	Result = mnesia:transaction(F),
-	Result.
-
-calc30dayMA() ->
-	ok.
-	
 init([]) -> 
 	mnesia:start(),
 	{ok, []}.
