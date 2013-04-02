@@ -1,14 +1,10 @@
 You spot a pack of ferl ferrets roaming the woods.
 
-ferl is the start of an automated trading system written in Erlang. 
+ferl is the start of an automated trading system. 
 
 This content is released under the MIT License. So, have at it.
 
 The name is pronounced fe*ral [feer-uhl, fer-] as in feral.  
-
-Dependencies:
-- Erlang
-- CouchDB
 
 0.1 Features:
 - Back testing
