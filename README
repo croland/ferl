@@ -7,12 +7,11 @@ This content is released under the MIT License. So, have at it.
 The name is pronounced fe*ral [feer-uhl, fer-] as in feral.  
 
 0.1 Features:
-- Manage simple portfolio
-- Trade Journal
-- Back testing
 - Simple indicators
-- Paper trade
+- Back testing
 - Import data
 
 Future features:
 - FIX support
+- Trade journal
+- Manage portfolio
