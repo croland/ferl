@@ -1,0 +1,8 @@
+<html>
+	<head><title>test 2</title></head>
+	<body>
+		<erl>
+			out(Arg) -> {html, "test 2"}.
+		</erl>
+	</body>
+</html>

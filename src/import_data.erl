@@ -8,6 +8,8 @@
 -module(import_data).
 -behaviour(gen_server).
 -include("c:/Program\ Files\ (x86)/erl5.10/lib/stdlib-1.19/include/qlc.hrl").
+-include("c:/Program\ Files\ (x86)/erl5.10/lib/eunit-2.2.4/include/eunit.hrl").
+
 -export([import_line/1]).
 -export([init/1, install/0, create_table/0, run/0, getall/0, start_link/0, handle_call/3, terminate/2]).
 
@@ -57,3 +59,7 @@ handle_call({import_line, Line}, _From, Db) ->
 
 terminate(_Reason, State) -> 
 	{ok, State}.
+
+some_test() ->
+	?assert(length([1,2,3]) =:= 3).
+
