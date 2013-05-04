@@ -1,19 +1,33 @@
 %% Copyright: Christopher Roland 2011
 %% 
-%% Description: Test file to determine how to import Yahoo finance data into CouchDB
-%% Usage:
-%% Call import_test:start_link() to start the gen_server
-%% Call import_test:run() to kick everything off
+%% Description: Test file to test run a simple moving average over imported Yahoo data 
+%% ---- Usage ----
+%% -- Setup database:
+%% sma:install() to create mnesia schema 
+%% sma:create_table() to create table
+%% -- Then import data:
+%% sma_test:start_link() to start the gen_server
+%% sma_test:run() to kick it off
 
--module(import_data).
+-module(sma).
 -behaviour(gen_server).
 -include("c:/Program\ Files\ (x86)/erl5.10/lib/stdlib-1.19/include/qlc.hrl").
 -include("c:/Program\ Files\ (x86)/erl5.10/lib/eunit-2.2.4/include/eunit.hrl").
 
 -export([import_line/1]).
--export([init/1, install/0, create_table/0, run/0, getall/0, start_link/0, handle_call/3, terminate/2]).
+-export([init/1, calc/1, install/0, create_table/0, run/0, getall/0, start_link/0, handle_call/3, terminate/2]).
 
 -record(tick, {tick_date, tick_open, tick_high, tick_low, tick_close, tick_vol, tick_adjclose}).
+
+start_link() -> gen_server:start_link({local, sma}, sma, [], []).	
+
+run() -> {ok, Binary} = file:read_file("../../data/msft.csv"),
+	Lines = string:tokens(erlang:binary_to_list(Binary), "\r\n"),
+	lists:map(fun(L) -> import_line(L) end, Lines).
+
+init([]) -> 
+	mnesia:start(),
+	{ok, []}.
 
 install() ->
 	ok = mnesia:create_schema([node()]),
@@ -29,17 +43,13 @@ getall() ->
 	{atomic, Results} = mnesia:transaction(Fun),
 	Results.
 
-init([]) -> 
-	mnesia:start(),
-	{ok, []}.
+calc([H|T]) ->
+	io:fwrite("~w~n", [H]),
+	calc(T);
 
-start_link() -> gen_server:start_link({local, import_data}, import_data, [], []).	
+calc([]) -> ok.
 
-run() -> {ok, Binary} = file:read_file("../data/msft.csv"),
-	Lines = string:tokens(erlang:binary_to_list(Binary), "\r\n"),
-	lists:map(fun(L) -> import_line(L) end, Lines).
-
-import_line(Line) -> gen_server:call(import_data, {import_line, Line}).	
+import_line(Line) -> gen_server:call(sma, {import_line, Line}).	
 
 handle_call({import_line, Line}, _From, Db) ->
 	[Date, Open, High, Low, Close, Volume, AdjClose] = re:split(Line, "[,]", [{return, list}]),
@@ -62,4 +72,3 @@ terminate(_Reason, State) ->
 
 some_test() ->
 	?assert(length([1,2,3]) =:= 3).
-
