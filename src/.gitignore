@@ -3,3 +3,4 @@ nohost
 *.log
 *.auth
 *.access
+*.DAT
