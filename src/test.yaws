@@ -2,7 +2,9 @@
 	<head><title>test</title></head>
 	<body>
 		<erl>
-			out(Arg) -> {html, "Test"}.
+			out(Arg) -> 
+				This = "hello", 
+				{html, This}.
 		</erl>
 	</body>
 </html>
