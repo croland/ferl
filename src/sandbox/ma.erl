@@ -1,7 +1,8 @@
--module(movingaverage).
+-module(ma).
 -export([run/0]).
 
 -record(tick, {date, open, high, low, close, vol, adjclose}).
+-record(account, {balance, name, transactions=[]}).
 
 run() ->
 	Ticks = parse(),
@@ -10,7 +11,7 @@ run() ->
 	Trades.
 
 parse() ->
-	{ok, Binary} = file:read_file("../../data/msft.csv"),
+	{ok, Binary} = file:read_file("../../data/gld.csv"),
 	Lines = string:tokens(erlang:binary_to_list(Binary), "\r\n"),
 	Ticks = lists:map(fun(L) -> parse_line(L) end, Lines),
 	Ticks.
