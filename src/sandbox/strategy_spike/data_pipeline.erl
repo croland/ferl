@@ -12,11 +12,8 @@ process_message() ->
 
 get_latest_bars(From) -> 
   MarketEvents = open_and_parse_file("goog-daily.csv"),
-  [From ! {self(), Event} || Event <- MarketEvents].
-
-update_bars() ->
-  ok.
-
+  [From ! {self(), Event} || Event <- MarketEvents],
+  From ! done. 
 
 open_and_parse_file(Filename) ->
   {ok, Binary} = file:read_file(Filename),
