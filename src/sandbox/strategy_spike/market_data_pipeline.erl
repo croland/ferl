@@ -1,4 +1,4 @@
--module(data_pipeline).
+-module(market_data_pipeline).
 -compile(export_all).
 -record(market_event, {date, open, high, low, close, vol, adjclose}).
 
