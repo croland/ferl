@@ -1,5 +1,6 @@
 -module(backtest).
 -compile(export_all).
+-record(signal, {from}).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -13,16 +14,22 @@ process_message(Events, Strategy) ->
   receive
     {From, Event} -> 
       process_message(Events ++ [Event], Strategy);
-    done -> send(Events)
+    done -> send(Strategy, Events)
   end.
 
-send(Events) -> io:format("~p~n", Events).
+determine_performance() ->
+  ok.
+
+send(Events, Strategy) -> Strategy ! Events. 
+
+
 
 
 
 % Tests
 should_process_events_from_data_pipeline_test() ->
   ok.
+
 
 
 
