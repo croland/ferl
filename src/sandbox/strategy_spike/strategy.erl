@@ -1,19 +1,21 @@
 -module(strategy).
 -compile(export_all).
 -record(signal, {from}).
+-record(moving_average, {event, mva}).
 -record(market_event, {date, open, high, low, close, vol, adjclose}).
 
 -include_lib("eunit/include/eunit.hrl").
 
-process_message(Events) ->
+process_message(Events, MVAEvents) ->
   receive
     {From, Event} -> 
-      process_events(From, Events),
-      process_message(Events ++ [Event])
+      ProcessedEvents = process_events(Events, MVAEvents),
+      process_message(Events ++ [Event], ProcessedEvents)
   end.
 
-process_events(From, MarketEvents) ->
-  [].
+process_events(MarketEvents, MVAEvents) ->
+  ProcessedEvents = [calculate_15_day_moving_average(MarketEvents, MVAEvents, MarketEvent) || MarketEvent <- MarketEvents],
+  ProcessedEvents.
 
 parse_line_to_market_event(Line) ->
 	[Date, Open, High, Low, Close, Volume, AdjClose] = re:split(Line, "[,]", [{return, list}]),
@@ -29,24 +31,26 @@ parse_line_to_market_event(Line) ->
   MarketEvent.
 
 % Calculations that should be moved into a different module
-calculate_15_day_moving_average(MarketEvents) when length(MarketEvents) == 0 ->
+calculate_15_day_moving_average(MarketEvents, MVAEvents, MarketEvent) when length(MarketEvents) == 0 ->
   0.
 
 % Tests
 should_calculate_zero_for_15_day_mva_with_less_than_15_days_of_market_events_test() ->
-  MarketEvents = [],
-  MVA = calculate_15_day_moving_average(MarketEvents),
-  ?assert(MVA =:= 0).
+  MarketEvents = lists:sublist(0, 5, get_15_days_of_market_events()),
+  MarketEvent = lists:last(MarketEvents),
+  MVAEvents = calculate_15_day_moving_average(MarketEvents, [], MarketEvent),
+  ?assert(length(MVAEvents) =:= 0).
 
 should_calculate_15_day_mva_15_days_of_market_events_test() ->
-  MarketEvents = [],
-  MVA = calculate_15_day_moving_average(MarketEvents),
-  ?assert(MVA =:= 0).
+  MarketEvents = get_15_days_of_market_events(),
+  MarketEvent = lists:last(MarketEvents),
+  MVAEvents = calculate_15_day_moving_average(MarketEvents, [], MarketEvent),
+  ?assert(length(MVAEvents) =:= 0).
 
 should_generate_moving_average_signal_test() ->
-  Events = [],
+  MarketEvents = get_15_days_of_market_events(),
   From = self(),
-  Signals = process_events(From, Events),
+  Signals = process_events(From, MarketEvents),
   ?assert(length(Signals) == 0).
 
 get_15_days_of_market_events() ->
