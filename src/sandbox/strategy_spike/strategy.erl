@@ -16,7 +16,7 @@ process_message(Events, MVAEvents) ->
   ok.
 
 process_events(MarketEvents, MVAEvents) ->
-  ProcessedEvents = [calculate_10_day_moving_average(MarketEvents, MVAEvents, MarketEvent) || MarketEvent <- MarketEvents],
+  ProcessedEvents = [calculate_10_day_sma(MarketEvents, MVAEvents, MarketEvent) || MarketEvent <- MarketEvents],
   ProcessedEvents.
 
 parse_line_to_market_event(Line) ->
@@ -33,10 +33,10 @@ parse_line_to_market_event(Line) ->
   MarketEvent.
 
 % Calculations that should be moved into a different module
-calculate_10_day_moving_average(MarketEvents, MVAEvents, MarketEvent) when length(MarketEvents) < 10 ->
-  [0];
+calculate_10_day_sma(MarketEvents, MVAEvents, MarketEvent) when length(MarketEvents) < 10 ->
+  {MarketEvent, 0};
 
-calculate_10_day_moving_average(MarketEvents, MVAEvents, MarketEvent) when length(MarketEvents) > 10 ->
+calculate_10_day_sma(MarketEvents, MVAEvents, MarketEvent) when length(MarketEvents) > 10 ->
   [0].
 
 calculate_market_event_diff(PreviousEvent, CurrentEvent) ->
@@ -49,16 +49,16 @@ calculate_market_event_diff_test() ->
   Diff = calculate_market_event_diff(PreviousEvent, CurrentEvent),
   ?assert(Diff =:= 10.0).
 
-should_calculate_zero_for_10_day_mva_with_less_than_10_days_of_market_events_test() ->
+should_calculate_zero_mva_for_all_events_when_there_are_less_than_10_days_total_of_market_events_test_for_asset() ->
   [MarketEvent | ReversedEvents] = lists:sublist(get_10_days_of_market_events(), 5),
   MarketEvents = lists:reverse(ReversedEvents),
-  MVAEvents = calculate_10_day_moving_average(MarketEvents, [], MarketEvent),
+  MVAEvents = calculate_10_day_sma(MarketEvents, [], MarketEvent),
   ?assert(length(MVAEvents) =:= 1).
 
 should_calculate_10_day_mva_10_days_of_market_events_test() ->
   [MarketEvent | ReversedEvents] = lists:reverse(get_10_days_of_market_events()),
   MarketEvents = lists:reverse(ReversedEvents),
-  MVAEvents = calculate_10_day_moving_average(MarketEvents, [], MarketEvent),
+  MVAEvents = calculate_10_day_sma(MarketEvents, [], MarketEvent),
   ?assert(length(MVAEvents) =:= 1).
 
 should_generate_moving_average_signal_test() ->
