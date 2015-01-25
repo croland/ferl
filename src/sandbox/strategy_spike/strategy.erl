@@ -3,7 +3,7 @@
 
 -record(signal, {from}).
 -record(moving_average, {event, mva}).
--record(market_event, {date, open, high, low, close, vol, adjclose}).
+-record(market_event, {symbol, date, open, high, low, close, vol, adjclose}).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -16,7 +16,7 @@ process_message(Events, MVAEvents) ->
   ok.
 
 process_events(MarketEvents, MVAEvents) ->
-  ProcessedEvents = [calculate_15_day_moving_average(MarketEvents, MVAEvents, MarketEvent) || MarketEvent <- MarketEvents],
+  ProcessedEvents = [calculate_10_day_moving_average(MarketEvents, MVAEvents, MarketEvent) || MarketEvent <- MarketEvents],
   ProcessedEvents.
 
 parse_line_to_market_event(Line) ->
@@ -33,45 +33,54 @@ parse_line_to_market_event(Line) ->
   MarketEvent.
 
 % Calculations that should be moved into a different module
-calculate_15_day_moving_average(MarketEvents, MVAEvents, MarketEvent) when length(MarketEvents) < 15 ->
+calculate_10_day_moving_average(MarketEvents, MVAEvents, MarketEvent) when length(MarketEvents) < 10 ->
   [0];
 
-calculate_15_day_moving_average(MarketEvents, MVAEvents, MarketEvent) when length(MarketEvents) > 15 ->
+calculate_10_day_moving_average(MarketEvents, MVAEvents, MarketEvent) when length(MarketEvents) > 10 ->
   [0].
 
+calculate_market_event_diff(PreviousEvent, CurrentEvent) ->
+  CurrentEvent#market_event.adjclose - PreviousEvent#market_event.adjclose.
+
 % Tests
-should_calculate_zero_for_15_day_mva_with_less_than_15_days_of_market_events_test() ->
-  [MarketEvent | ReversedEvents] = lists:sublist(get_15_days_of_market_events(), 5),
+calculate_market_event_diff_test() ->
+  PreviousEvent = #market_event{symbol="LOL", date=iolist_to_binary("2015-01-24"), open=20.0, high=40.0, low=10.0, close=30.0, vol=100111, adjclose=30.0},
+  CurrentEvent = #market_event{symbol="LOL", date=iolist_to_binary("2015-01-24"), open=20.0, high=40.0, low=10.0, close=40.0, vol=100111, adjclose=40.0},
+  Diff = calculate_market_event_diff(PreviousEvent, CurrentEvent),
+  ?assert(Diff =:= 10.0).
+
+should_calculate_zero_for_10_day_mva_with_less_than_10_days_of_market_events_test() ->
+  [MarketEvent | ReversedEvents] = lists:sublist(get_10_days_of_market_events(), 5),
   MarketEvents = lists:reverse(ReversedEvents),
-  MVAEvents = calculate_15_day_moving_average(MarketEvents, [], MarketEvent),
+  MVAEvents = calculate_10_day_moving_average(MarketEvents, [], MarketEvent),
   ?assert(length(MVAEvents) =:= 1).
 
-should_calculate_15_day_mva_15_days_of_market_events_test() ->
-  [MarketEvent | ReversedEvents] = lists:reverse(get_15_days_of_market_events()),
+should_calculate_10_day_mva_10_days_of_market_events_test() ->
+  [MarketEvent | ReversedEvents] = lists:reverse(get_10_days_of_market_events()),
   MarketEvents = lists:reverse(ReversedEvents),
-  MVAEvents = calculate_15_day_moving_average(MarketEvents, [], MarketEvent),
+  MVAEvents = calculate_10_day_moving_average(MarketEvents, [], MarketEvent),
   ?assert(length(MVAEvents) =:= 1).
 
 should_generate_moving_average_signal_test() ->
-  MarketEvents = get_15_days_of_market_events(),
+  MarketEvents = get_10_days_of_market_events(),
   From = self(),
   Signals = process_events(MarketEvents, []),
   ?assert(length(Signals) =:= 1).
 
-get_15_days_of_market_events() ->
-  Lines = ["2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
-    "2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27"],
+get_10_days_of_market_events() ->
+  Lines = ["LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27",
+    "LOL,2011-10-14,27.31,27.50,27.02,27.27,50947700,27.27"],
   MarketEvents = [parse_line_to_market_event(Line) || Line <- Lines],
   MarketEvents.
 
